@@ -1,5 +1,6 @@
 const React = require("react")
 const ReactDOM = require("react-dom")
+const ReactTestUtils = require("react-dom/test-utils")
 
 class PlayForm extends React.Component {
     constructor(){
@@ -8,12 +9,34 @@ class PlayForm extends React.Component {
     }
 
     handleSubmit(){
+        this.props.rps.play(this.state.p1, this.state.p2, this)
+    }
+    
+    invalid(){
         this.setState({message: "INVALID"})
+    }
+    
+    tie(){
+        this.setState({message: "TIE"})
+    }
+
+    p1Wins(){
+        this.setState({message: "P1 WINS!"})
+    }
+
+    p2Wins(){
+        this.setState({message: "P2 WINS!"})
+    }
+
+    handleInput(e){
+        this.setState({[e.target.name]: e.target.value})
     }
 
     render(){
         return <div>
             {this.state.message}
+            <input name="p1" onChange={this.handleInput.bind(this)}/>
+            <input name="p2" onChange={this.handleInput.bind(this)}/>
             <button onClick={this.handleSubmit.bind(this)}>PLAY</button>
         </div>
     }
@@ -31,6 +54,60 @@ describe("play round form", function () {
             expect(page()).toContain("INVALID")
         })
     })
+    
+    describe("when play determines the round is tie", function () {
+        beforeEach(function () {
+            renderForm({ play(p1, p2, ui){ ui.tie() }})
+        })
+
+        it("the user should see 'TIE'", function () {
+            expect(page()).not.toContain("TIE")
+            submitForm()
+            expect(page()).toContain("TIE")
+        })
+    })
+
+    describe("when play determines the round is p1 wins", function () {
+        beforeEach(function () {
+            renderForm({ play(p1, p2, ui){ ui.p1Wins() }})
+        })
+
+        it("the user should see 'P1 WINS!'", function () {
+            expect(page()).not.toContain("P1 WINS!")
+            submitForm()
+            expect(page()).toContain("P1 WINS!")
+        })
+    })
+
+    describe("when play determines the round is p2 wins", function () {
+        beforeEach(function () {
+            renderForm({ play(p1, p2, ui){ ui.p2Wins() }})
+        })
+
+        it("the user should see 'P2 WINS!'", function () {
+            expect(page()).not.toContain("P2 WINS!")
+            submitForm()
+            expect(page()).toContain("P2 WINS!")
+        })
+    })
+
+    it("sends the user's input to the rps play method", function () {
+        const playSpy = jasmine.createSpy()
+        renderForm({play: playSpy})
+
+        let input = document.querySelector("[name='p1']")
+        input.value = "foo"
+        ReactTestUtils.Simulate.change(input)
+
+        input = document.querySelector("[name='p2']")
+        input.value = "bar"
+        ReactTestUtils.Simulate.change(input)
+
+        submitForm()
+
+        expect(playSpy).toHaveBeenCalledWith("foo", "bar", jasmine.any(Object))
+    })
+
 
     let domFixture
 
