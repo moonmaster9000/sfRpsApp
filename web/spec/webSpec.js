@@ -95,18 +95,19 @@ describe("play round form", function () {
         const playSpy = jasmine.createSpy()
         renderForm({play: playSpy})
 
-        let input = document.querySelector("[name='p1']")
-        input.value = "foo"
-        ReactTestUtils.Simulate.change(input)
-
-        input = document.querySelector("[name='p2']")
-        input.value = "bar"
-        ReactTestUtils.Simulate.change(input)
+        fillIn("p1", "foo")
+        fillIn("p2", "bar")
 
         submitForm()
 
         expect(playSpy).toHaveBeenCalledWith("foo", "bar", jasmine.any(Object))
     })
+
+    function fillIn(inputName, inputValue){
+        let input = document.querySelector(`[name='${inputName}']`)
+        input.value = inputValue
+        ReactTestUtils.Simulate.change(input)
+    }
 
 
     let domFixture
