@@ -1,6 +1,47 @@
 const React = require("react")
 const ReactDOM = require("react-dom")
 const ReactTestUtils = require("react-dom/test-utils")
+const {Round} = require("rps")
+
+class App extends React.Component {
+    render (){
+        return <div>
+            <PlayForm rps={this.props.rps}/>
+            <RoundHistory rps={this.props.rps}/>
+        </div>
+    }
+}
+
+class RoundHistory extends React.Component {
+    constructor(){
+        super()
+        this.state = {}
+    }
+
+    componentDidMount(){
+        this.props.rps.getHistory(this)
+    }
+
+    noRounds(){
+        this.setState({roundsDisplay: "NO ROUNDS"})
+    }
+
+    rounds(rs){
+        this.setState({roundsDisplay: rs.map(r => `${r.p1Throw} ${r.p2Throw} ${this.translateResult(r.result)}`)})
+    }
+
+    translateResult(resultCode){
+        return {
+            p2: "P2 Wins!"
+        }[resultCode]
+    }
+
+    render(){
+        return <div>
+            <ul>{this.state.roundsDisplay}</ul>
+        </div>
+    }
+}
 
 class PlayForm extends React.Component {
     constructor(){
@@ -103,6 +144,31 @@ describe("play round form", function () {
         expect(playSpy).toHaveBeenCalledWith("foo", "bar", jasmine.any(Object))
     })
 
+    describe("when no rounds have been played", function () {
+        beforeEach(function () {
+            renderForm({getHistory(ui) {ui.noRounds()}})
+        })
+
+        it("displays 'NO ROUNDS'", function () {
+            expect(page()).toContain('NO ROUNDS')
+        })
+    })
+
+    describe("when rounds have been played", function () {
+        beforeEach(function () {
+            renderForm({getHistory(ui) {ui.rounds([
+                new Round("foo", "bar", "invalid"),
+                new Round("rock", "paper", "p2"),
+            ])}})
+        })
+
+        it("displays the round results", function () {
+            expect(page()).toContain("rock")
+            expect(page()).toContain("paper")
+            expect(page()).toContain("P2 Wins!")
+        })
+    })
+
     function fillIn(inputName, inputValue){
         let input = document.querySelector(`[name='${inputName}']`)
         input.value = inputValue
@@ -130,8 +196,9 @@ describe("play round form", function () {
     }
 
     function renderForm(rps) {
+        rps.getHistory = rps.getHistory || function(){}
         ReactDOM.render(
-            <PlayForm rps={rps}/>,
+            <App rps={rps}/>,
             domFixture
         )
     }
