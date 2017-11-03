@@ -1,4 +1,4 @@
-const Rps = require("../src/rps")
+const {Rps} = require("../src/rps")
 
 describe("play Round", function () {
     let rps
