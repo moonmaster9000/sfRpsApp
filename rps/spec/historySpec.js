@@ -2,13 +2,18 @@ const {Rps, Round} = require("../src/rps")
 const FakeRoundRepo = require("./FakeRoundRepo")
 
 describe("history", function () {
+    let repo, rps
+
+    beforeEach(function () {
+        repo = new FakeRoundRepo()
+        rps = new Rps(repo)
+    })
+
     describe("no one has played", function () {
         it("should tell the UI there are no rounds", function () {
-            let repo = new FakeRoundRepo()
-
             let ui = jasmine.createSpyObj("ui", ["noRounds"])
 
-            new Rps(repo).getHistory(ui)
+            rps.getHistory(ui)
 
             expect(ui.noRounds).toHaveBeenCalled()
         })
@@ -18,8 +23,6 @@ describe("history", function () {
         it("should send the round results to the UI", function () {
             let historyUISpy = jasmine.createSpyObj("historyUISpy", ["rounds"])
             let ui = {invalid(){}, tie(){}, p1Wins(){}, p2Wins(){}}
-            let repo = new FakeRoundRepo()
-            let rps = new Rps(repo)
 
             rps.playRound("rock", "sailboat", ui)
             rps.playRound("rock", "rock", ui)
