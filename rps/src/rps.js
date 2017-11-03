@@ -1,9 +1,9 @@
-function Rps(){
-    this.playRound = function(p1Throw, p2Throw, ui, repo){
+function Rps(repo){
+    this.playRound = function(p1Throw, p2Throw, ui){
         new PlayRoundRequest(p1Throw, p2Throw, ui, repo).process()
     }
 
-    this.getHistory = function(ui, repo){
+    this.getHistory = function(ui){
         if (repo.isEmpty()){
             ui.noRounds()
         } else {
@@ -21,14 +21,14 @@ function Round(p1Throw, p2Throw, result){
 function PlayRoundRequest(p1Throw, p2Throw, ui, repo){
     this.process = function(){
         if (invalid(p1Throw) || invalid(p2Throw)){
-            ui.invalid()
-            repo.save(new Round(p1Throw, p2Throw, "invalid"))
-        } else if (tie())
-            ui.tie()
-        else if (p1Wins())
-            ui.p1Wins()
-        else
-            ui.p2Wins()
+            processInvalid()
+        } else if (tie()){
+            processTie()
+        } else if (p1Wins()){
+            processP1Wins()
+        } else {
+            processP2Wins()
+        }
     }
 
     const ROCK = "rock"
@@ -49,6 +49,30 @@ function PlayRoundRequest(p1Throw, p2Throw, ui, repo){
         return p1Throw === ROCK     && p2Throw === SCISSORS ||
             p1Throw === PAPER    && p2Throw === ROCK     ||
             p1Throw === SCISSORS && p2Throw === PAPER
+    }
+
+    function save(result) {
+        repo.save(new Round(p1Throw, p2Throw, result))
+    }
+
+    function processInvalid() {
+        ui.invalid()
+        save("invalid")
+    }
+
+    function processTie() {
+        ui.tie()
+        save("tie")
+    }
+
+    function processP1Wins() {
+        ui.p1Wins()
+        save("p1")
+    }
+
+    function processP2Wins() {
+        ui.p2Wins()
+        save("p2")
     }
 }
 
